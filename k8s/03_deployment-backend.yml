@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-dep
+  namespace: glamai-ns
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cms-backend
+  template:
+    metadata:
+      labels:
+        app: cms-backend
+    spec:
+      containers:
+      - name: cms-backend-container
+        image: sarojdockerworkspace/glamai-backend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9000
+        envFrom:
+          - configMapRef:
+              name: cms-config
+
+        env:
+
+          - name: FORTEND_URL
+            valueFrom:
+              configMapKeyRef:
+                name: cms-config
+                key: FORTEND_URL
+
+          - name: PORT
+            valueFrom:
+              configMapKeyRef:
+                name: cms-config
+                key: BACKEND_PORT
+
+          - name: MONGO_URI
+            valueFrom:
+              configMapKeyRef:
+                name: cms-config
+                key: MONGO_URI
+
+          - name: JWT_SECRET
+            valueFrom:
+              configMapKeyRef:
+                name: cms-config
+                key: JWT_SECRET
+
+
+
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

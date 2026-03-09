@@ -1,0 +1,86 @@
+# ========================
+# Environment Variables
+# ========================
+.env
+.env.*
+*.env
+envirnoment/
+
+# ========================
+# Dependencies
+# ========================
+node_modules/
+
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+*.egg
+*.whl
+dist/
+
+# ========================
+# Kubernetes Secrets/ConfigMaps
+# ========================
+k8s/02_configMaps.yml
+model/k8s/configMaps.yml
+
+# ========================
+# Build Outputs
+# ========================
+build/
+coverage/
+htmlcov/
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ========================
+# OS Generated Files
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# Logs
+# ========================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pip-log.txt
+
+# ========================
+# Testing / Coverage
+# ========================
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+
+# ========================
+# Docker & CI Artifacts
+# ========================
+dependency-check-report/
+*-image-scan.json
+result.json
+
+# ========================
+# Uploads (user data)
+# ========================
+uploads/

@@ -1,0 +1,52 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: glamai-ingress
+  namespace: glamai-ns
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "139.59.85.203.nip.io"
+    http:
+      paths:
+
+      - path: /server(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: cms-svc
+            port:
+              number: 9000
+
+      - path: /model(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: cms-model-svc
+            port:
+              number: 5000
+
+      - path: /ollama(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: ollama-svc
+            port:
+              number: 11434
+
+      - path: /()(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: cms-fortend-svc
+            port:
+              number: 80

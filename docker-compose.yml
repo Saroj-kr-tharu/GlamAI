@@ -1,0 +1,123 @@
+
+services:
+
+  #  Ollama – Local LLM runtime
+  ollama:
+    image: ollama/ollama:latest
+    container_name: glamai-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - glamai-network
+    restart: unless-stopped
+
+  # pull the phi3 model into Ollama
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: glamai-ollama-pull
+    depends_on:
+      - ollama
+    entrypoint: ["/bin/sh", "-c", "sleep 10 && ollama pull phi3"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    networks:
+      - glamai-network
+    restart: "no"
+
+  #  Model – GlamAi Flask API
+  face-api:
+    image: sarojdockerworkspace/glamai-model:latest
+    build:
+      context: ./model
+      dockerfile: Dockerfile
+      args:
+        - BIND_IP=0.0.0.0
+    container_name: glamai-face-api
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./model/uploads:/app/uploads
+    env_file:
+      - ./envirnoment/.env.model
+    
+    environment:
+      - BIND_IP=0.0.0.0
+      - PORT=5000
+      - OLLAMA_HOST=http://139.59.85.203.nip.io/ollama
+    depends_on:
+      ollama:
+        condition: service_started
+      ollama-pull:
+        condition: service_completed_successfully
+    networks:
+      - glamai-network
+    restart: unless-stopped
+    healthcheck:
+      # Matches the logic in your Dockerfile ENTRYPOINT/HEALTHCHECK
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  
+
+  #  Backend – Node.js 
+  backend:
+    image: sarojdockerworkspace/glamai-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: glamai-backend
+    ports:
+      - "9000:5000"
+    volumes:
+      - ./backend/src/uploads:/backend/src/uploads
+    env_file:
+      - ./envirnoment/.env.backend
+    depends_on:
+      face-api:
+        condition: service_healthy
+      
+    networks:
+      - glamai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  #  Frontend
+  frontend:
+    image: sarojdockerworkspace/glamai-frontend:latest
+    build:
+      context: ./fortend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_BASE_URL: /server/api
+    container_name: glamai-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - glamai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+networks:
+  glamai-network:
+    driver: bridge
+
+volumes:
+  ollama_data:

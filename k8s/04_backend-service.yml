@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cms-svc
+  namespace: glamai-ns
+spec:
+  selector:
+    app: cms-backend
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
